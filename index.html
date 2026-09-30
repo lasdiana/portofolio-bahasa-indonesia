@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portofolio Bahasa Indonesia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    @media print {
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- Header / Navbar -->
+  <header class="bg-indigo-700 text-white shadow-md p-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <i class="fa-solid fa-book-bookmark text-2xl text-yellow-300"></i>
+      <h1 class="text-xl font-bold tracking-wide">Portofolio Bahasa Indonesia</h1>
+    </div>
+    <div id="userInfoHeader" class="hidden flex items-center space-x-3">
+      <span id="headerName" class="font-medium text-sm md:text-base"></span>
+      <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition">
+        <i class="fa-solid fa-right-from-bracket mr-1"></i>Keluar
+      </button>
+    </div>
+  </header>
+
+  <!-- Container Utama -->
+  <main class="container mx-auto p-4 max-w-5xl flex-grow flex items-center justify-center">
+
+    <!-- 1. HALAMAN LOGIN -->
+    <div id="loginPage" class="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6">
+      <div class="text-center">
+        <h2 class="text-2xl font-bold text-gray-800">Portofolio Bahasa Indonesia</h2>
+        <p class="text-gray-500 text-sm mt-1">Masuk untuk mengelola dan menyimpan tugas Anda</p>
+      </div>
+
+      <div id="loginAlert" class="hidden p-3 bg-red-100 text-red-700 rounded-lg text-sm"></div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Username (Nama Siswa / Admin)</label>
+          <input type="text" id="loginUsername" required placeholder="Nama Siswa / Admin"
+            class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Password</label>
+          <input type="password" id="loginPassword" required placeholder="Format DDMM (Tanggal & Bulan Lahir)"
+            class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <span class="text-xs text-gray-400">Contoh password siswa lahir 05 April: <b>0504</b></span>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition">
+          Masuk
+        </button>
+      </form>
+
+      <div class="text-center border-t pt-4">
+        <p class="text-sm text-gray-600">Belum punya akun? 
+          <button onclick="showPage('registerPage')" class="text-indigo-600 font-semibold hover:underline">Daftar Sekarang</button>
+        </p>
+      </div>
+    </div>
+
+    <!-- 2. HALAMAN PENDAFTARAN -->
+    <div id="registerPage" class="hidden w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-5">
+      <div class="text-center">
+        <h2 class="text-2xl font-bold text-gray-800">Pendaftaran Siswa Baru</h2>
+        <p class="text-gray-500 text-sm mt-1">Portofolio Bahasa Indonesia</p>
+      </div>
+
+      <form onsubmit="handleRegister(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+          <input type="text" id="regNama" required placeholder="Ahmad Subagja"
+            class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Kelas</label>
+          <select id="regKelas" required class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <option value="">-- Pilih Kelas --</option>
+            <option value="7A">7A</option>
+            <option value="7B">7B</option>
+            <option value="7C">7C</option>
+            <option value="7D">7D</option>
+            <option value="7E">7E</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+          <input type="date" id="regTglLahir" required
+            class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Foto Profil</label>
+          <input type="file" id="regFoto" accept="image/*" required
+            class="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+        </div>
+
+        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition">
+          Daftar Akun
+        </button>
+      </form>
+
+      <div class="text-center border-t pt-3">
+        <button onclick="showPage('loginPage')" class="text-gray-600 text-sm hover:underline">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Login
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. DASHBOARD SISWA -->
+    <div id="studentDashboard" class="hidden w-full space-y-6">
+      <div class="bg-white rounded-xl shadow p-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+        <img id="studentAvatar" src="" alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-indigo-100">
+        <div class="text-center sm:text-left">
+          <h2 id="studentName" class="text-2xl font-bold text-gray-800"></h2>
+          <p id="studentClass" class="text-indigo-600 font-medium"></p>
+          <p id="studentDob" class="text-gray-500 text-sm mt-1"></p>
+        </div>
+      </div>
+
+      <!-- Form Upload Tugas -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-cloud-arrow-up text-indigo-600 mr-2"></i>Kirim Tugas Portofolio Baru</h3>
+        <form onsubmit="handleUploadTask(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Judul / Materi Tugas</label>
+            <input type="text" id="taskTitle" required placeholder="Contoh: Teks Eksplanasi / Teks Tinjauan Puisi"
+              class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Jenis Berkas Tugas</label>
+            <select id="taskType" onchange="toggleTaskInput()" required class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+              <option value="pdf">File Dokumen (PDF, Docx, Gambar)</option>
+              <option value="youtube">Link Video YouTube</option>
+              <option value="video">Upload File Video Langsung (MP4/WebM)</option>
+            </select>
+          </div>
+
+          <div id="inputPdfBlock">
+            <label class="block text-sm font-medium text-gray-700">Pilih File Dokumen</label>
+            <input type="file" id="taskFilePdf"
+              class="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+          </div>
+
+          <div id="inputYoutubeBlock" class="hidden">
+            <label class="block text-sm font-medium text-gray-700">Tautan / Link YouTube</label>
+            <input type="url" id="taskYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..."
+              class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div id="inputVideoBlock" class="hidden">
+            <label class="block text-sm font-medium text-gray-700">Pilih File Video MP4/WebM</label>
+            <input type="file" id="taskFileVideo" accept="video/*"
+              class="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+          </div>
+
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition">
+            Simpan & Kirim Tugas
+          </button>
+        </form>
+      </div>
+
+      <!-- Riwayat & Penilaian Tugas Saya -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-folder-open text-indigo-600 mr-2"></i>Koleksi & Nilai Portofolio Saya</h3>
+        <div id="studentTaskList" class="grid grid-cols-1 gap-4">
+          <!-- Render otomatis portofolio siswa -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. DASHBOARD ADMIN -->
+    <div id="adminDashboard" class="hidden w-full space-y-6">
+      <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex justify-between items-center border-b pb-4 mb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-800">Panel Guru - Bahasa Indonesia</h2>
+            <p class="text-gray-500 text-sm">Kelola penilaian & ekspor laporan per kelas</p>
+          </div>
+          <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+            Notifikasi Email Aktif
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-100 flex items-center space-x-4">
+            <i class="fa-solid fa-users text-3xl text-indigo-600"></i>
+            <div>
+              <p class="text-gray-500 text-sm">Total Siswa Terdaftar</p>
+              <p id="totalStudents" class="text-2xl font-bold text-gray-800">0</p>
+            </div>
+          </div>
+          <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center space-x-4">
+            <i class="fa-solid fa-file-circle-check text-3xl text-emerald-600"></i>
+            <div>
+              <p class="text-gray-500 text-sm">Total Tugas Diterima</p>
+              <p id="totalTasks" class="text-2xl font-bold text-gray-800">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Kelas & Tabel Nilai -->
+      <div class="bg-white rounded-xl shadow p-6" id="printableArea">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 no-print">
+          <div class="flex items-center space-x-2 w-full sm:w-auto">
+            <label class="text-sm font-semibold text-gray-700 whitespace-nowrap">Pilih Kelas:</label>
+            <select id="adminFilterKelas" onchange="loadAdminDashboard()" class="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm w-full sm:w-48">
+              <option value="SEMUA">-- Semua Kelas --</option>
+              <option value="7A">7A</option>
+              <option value="7B">7B</option>
+              <option value="7C">7C</option>
+              <option value="7D">7D</option>
+              <option value="7E">7E</option>
+            </select>
+          </div>
+
+          <button onclick="window.print()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+            <i class="fa-solid fa-file-pdf"></i> Simpan Rekap PDF Kelas
+          </button>
+        </div>
+
+        <div class="border-b pb-2 mb-4">
+          <h3 class="text-lg font-bold text-gray-800" id="rekapTitle">Daftar Portofolio & Penilaian</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-gray-600 border-collapse">
+            <thead class="bg-gray-100 text-gray-700 uppercase">
+              <tr>
+                <th class="p-3 border">Siswa</th>
+                <th class="p-3 border">Kelas</th>
+                <th class="p-3 border">Judul Tugas</th>
+                <th class="p-3 border">Tipe Berkas</th>
+                <th class="p-3 border">Nilai</th>
+                <th class="p-3 border">Catatan Guru</th>
+                <th class="p-3 border no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="adminTaskList">
+              <!-- Render otomatis tugas per kelas -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-gray-100 text-center py-4 text-xs text-gray-500 border-t no-print">
+    &copy; Portofolio Bahasa Indonesia - System Auto Email Notification
+  </footer>
+
+  <script>
+    let dbStudents = JSON.parse(localStorage.getItem('db_students')) || [];
+    let dbTasks = JSON.parse(localStorage.getItem('db_tasks')) || [];
+    let currentUser = null;
+
+    // Ganti dengan Web App URL dari Google Apps Script Anda jika sudah ada
+    const APPS_SCRIPT_URL = "URL_GOOGLE_APPS_SCRIPT_ANDA";
+
+    function showPage(pageId) {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('registerPage').classList.add('hidden');
+      document.getElementById('studentDashboard').classList.add('hidden');
+      document.getElementById('adminDashboard').classList.add('hidden');
+
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    function toggleTaskInput() {
+      const type = document.getElementById('taskType').value;
+      document.getElementById('inputPdfBlock').classList.add('hidden');
+      document.getElementById('inputYoutubeBlock').classList.add('hidden');
+      document.getElementById('inputVideoBlock').classList.add('hidden');
+
+      if (type === 'pdf') document.getElementById('inputPdfBlock').classList.remove('hidden');
+      if (type === 'youtube') document.getElementById('inputYoutubeBlock').classList.remove('hidden');
+      if (type === 'video') document.getElementById('inputVideoBlock').classList.remove('hidden');
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const nama = document.getElementById('regNama').value.trim();
+      const kelas = document.getElementById('regKelas').value;
+      const tglLahir = document.getElementById('regTglLahir').value;
+      const fotoInput = document.getElementById('regFoto').files[0];
+
+      const dateObj = new Date(tglLahir);
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const password = `${day}${month}`;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const photoBase64 = evt.target.result;
+
+        const newStudent = {
+          id: Date.now(),
+          username: nama,
+          password: password,
+          nama: nama,
+          kelas: kelas,
+          tglLahir: tglLahir,
+          foto: photoBase64
+        };
+
+        dbStudents.push(newStudent);
+        localStorage.setItem('db_students', JSON.stringify(dbStudents));
+
+        alert(`Pendaftaran Berhasil!\n\nUsername Anda: ${nama}\nPassword Anda: ${password} (Tanggal & Bulan Lahir)`);
+        showPage('loginPage');
+      };
+
+      if (fotoInput) {
+        reader.readAsDataURL(fotoInput);
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const userVal = document.getElementById('loginUsername').value.trim();
+      const passVal = document.getElementById('loginPassword').value.trim();
+      const alertBox = document.getElementById('loginAlert');
+
+      // Login Admin
+      if (userVal === "Hari" && passVal === "Hari123") {
+        currentUser = { role: "admin", nama: "Administrator (Hari)" };
+        setupHeader();
+        loadAdminDashboard();
+        showPage('adminDashboard');
+        return;
+      }
+
+      // Login Siswa
+      const foundStudent = dbStudents.find(s => 
+        s.username.toLowerCase() === userVal.toLowerCase() && s.password === passVal
+      );
+
+      if (foundStudent) {
+        currentUser = { ...foundStudent, role: "siswa" };
+        setupHeader();
+        loadStudentDashboard();
+        showPage('studentDashboard');
+      } else {
+        alertBox.textContent = "Username atau Password salah!";
+        alertBox.classList.remove('hidden');
+      }
+    }
+
+    function setupHeader() {
+      document.getElementById('userInfoHeader').classList.remove('hidden');
+      document.getElementById('headerName').textContent = currentUser.nama;
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('userInfoHeader').classList.add('hidden');
+      showPage('loginPage');
+    }
+
+    function loadStudentDashboard() {
+      document.getElementById('studentName').textContent = currentUser.nama;
+      document.getElementById('studentClass').textContent = `Kelas: ${currentUser.kelas}`;
+      document.getElementById('studentDob').textContent = `Tgl Lahir: ${currentUser.tglLahir}`;
+      document.getElementById('studentAvatar').src = currentUser.foto;
+
+      renderStudentTasks();
+    }
+
+    function handleUploadTask(e) {
+      e.preventDefault();
+      const title = document.getElementById('taskTitle').value;
+      const type = document.getElementById('taskType').value;
+
+      let taskData = {
+        id: Date.now(),
+        studentId: currentUser.id,
+        studentName: currentUser.nama,
+        studentClass: currentUser.kelas,
+        title: title,
+        type: type,
+        uploadDate: new Date().toLocaleDateString('id-ID'),
+        fileContent: '',
+        nilai: '-',
+        catatan: 'Belum dinilai'
+      };
+
+      if (type === 'youtube') {
+        taskData.fileContent = document.getElementById('taskYoutubeUrl').value;
+        saveTask(taskData);
+      } else if (type === 'video') {
+        const file = document.getElementById('taskFileVideo').files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          taskData.fileContent = evt.target.result;
+          saveTask(taskData);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const file = document.getElementById('taskFilePdf').files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          taskData.fileContent = evt.target.result;
+          taskData.fileName = file.name;
+          saveTask(taskData);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function saveTask(taskData) {
+      dbTasks.push(taskData);
+      localStorage.setItem('db_tasks', JSON.stringify(dbTasks));
+
+      sendEmailNotification(taskData);
+
+      alert("Tugas Portofolio berhasil dikirim!");
+      document.getElementById('taskTitle').value = '';
+      renderStudentTasks();
+    }
+
+    function sendEmailNotification(taskData) {
+      if (APPS_SCRIPT_URL !== "URL_GOOGLE_APPS_SCRIPT_ANDA") {
+        fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'sendEmailNotification',
+            studentName: taskData.studentName,
+            studentClass: taskData.studentClass,
+            taskTitle: taskData.title
+          })
+        }).catch(err => console.log('Email Error:', err));
+      }
+    }
+
+    function renderStudentTasks() {
+      const container = document.getElementById('studentTaskList');
+      container.innerHTML = '';
+
+      const myTasks = dbTasks.filter(t => t.studentId === currentUser.id);
+
+      if (myTasks.length === 0) {
+        container.innerHTML = `<p class="text-center text-gray-400 py-4">Belum ada tugas portofolio yang dikirim.</p>`;
+        return;
+      }
+
+      myTasks.forEach(task => {
+        let contentHtml = '';
+
+        if (task.type === 'youtube') {
+          contentHtml = `<a href="${task.fileContent}" target="_blank" class="inline-block bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">
+                          <i class="fa-brands fa-youtube mr-1"></i> Tonton di YouTube
+                         </a>`;
+        } else if (task.type === 'video') {
+          contentHtml = `<video controls class="w-full max-h-48 rounded mt-2 bg-black">
+                          <source src="${task.fileContent}">
+                         </video>`;
+        } else {
+          contentHtml = `<a href="${task.fileContent}" download="${task.fileName || 'tugas.pdf'}" class="inline-block bg-indigo-600 text-white px-3 py-1.5 rounded text-sm hover:bg-indigo-700">
+                          <i class="fa-solid fa-file-arrow-down mr-1"></i> Unduh / Buka Dokumen
+                         </a>`;
+        }
+
+        const nilaiBadgeClass = task.nilai !== '-' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-yellow-100 text-yellow-800 border-yellow-300';
+
+        container.innerHTML += `
+          <div class="border rounded-lg p-4 bg-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="space-y-2 flex-grow">
+              <div class="flex items-center gap-2">
+                <h4 class="font-bold text-gray-800 text-lg">${task.title}</h4>
+                <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded uppercase font-semibold">${task.type}</span>
+              </div>
+              <p class="text-xs text-gray-400">Diunggah: ${task.uploadDate}</p>
+              <div>${contentHtml}</div>
+            </div>
+
+            <div class="border-t md:border-t-0 md:border-l pt-3 md:pt-0 md:pl-4 min-w-[180px]">
+              <span class="text-xs text-gray-500 font-semibold block mb-1">Hasil Evaluasi Guru:</span>
+              <div class="border rounded-lg p-2.5 text-center ${nilaiBadgeClass}">
+                <div class="text-2xl font-extrabold">${task.nilai}</div>
+                <div class="text-xs italic mt-0.5">${task.catatan}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function loadAdminDashboard() {
+      document.getElementById('totalStudents').textContent = dbStudents.length;
+      document.getElementById('totalTasks').textContent = dbTasks.length;
+
+      const selectedClass = document.getElementById('adminFilterKelas').value;
+      const list = document.getElementById('adminTaskList');
+      list.innerHTML = '';
+
+      let filteredTasks = dbTasks;
+      if (selectedClass !== 'SEMUA') {
+        filteredTasks = dbTasks.filter(t => t.studentClass === selectedClass);
+        document.getElementById('rekapTitle').textContent = `Daftar Portofolio & Penilaian - ${selectedClass}`;
+      } else {
+        document.getElementById('rekapTitle').textContent = `Daftar Seluruh Portofolio & Penilaian`;
+      }
+
+      if (filteredTasks.length === 0) {
+        list.innerHTML = `<tr><td colspan="7" class="p-3 text-center text-gray-400">Tidak ada data tugas untuk kelas ini.</td></tr>`;
+        return;
+      }
+
+      filteredTasks.forEach(task => {
+        let fileLink = '';
+        if (task.type === 'youtube') {
+          fileLink = `<a href="${task.fileContent}" target="_blank" class="text-red-600 font-medium hover:underline"><i class="fa-brands fa-youtube"></i> YouTube</a>`;
+        } else {
+          fileLink = `<a href="${task.fileContent}" download class="text-indigo-600 font-medium hover:underline"><i class="fa-solid fa-download"></i> Unduh File</a>`;
+        }
+
+        list.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-3 border font-medium text-gray-800">${task.studentName}</td>
+            <td class="p-3 border">${task.studentClass}</td>
+            <td class="p-3 border">${task.title}</td>
+            <td class="p-3 border uppercase text-xs font-bold">${task.type} (${fileLink})</td>
+            <td class="p-3 border font-bold text-center text-indigo-700">${task.nilai}</td>
+            <td class="p-3 border text-xs italic">${task.catatan}</td>
+            <td class="p-3 border no-print">
+              <button onclick="openGradeModal(${task.id})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-2.5 py-1.5 rounded transition">
+                <i class="fa-solid fa-pen-to-square mr-1"></i> Beri Nilai
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openGradeModal(taskId) {
+      const task = dbTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const nilai = prompt(`Masukkan Nilai (0-100) untuk siswa: ${task.studentName}`, task.nilai !== '-' ? task.nilai : '85');
+      if (nilai === null) return;
+
+      const catatan = prompt(`Masukkan Catatan/Komentar Guru:`, task.catatan !== 'Belum dinilai' ? task.catatan : 'Bagus, tingkatkan lagi!');
+      if (catatan === null) return;
+
+      task.nilai = nilai;
+      task.catatan = catatan;
+
+      localStorage.setItem('db_tasks', JSON.stringify(dbTasks));
+      alert("Nilai dan catatan berhasil diperbarui!");
+      loadAdminDashboard();
+    }
+  </script>
+</body>
+</html>
