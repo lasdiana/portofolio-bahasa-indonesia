@@ -135,8 +135,25 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Tautan / Link Tugas (Google Drive / YouTube)</label>
-            <input type="url" id="taskUrl" required placeholder="https://..."
+            <label class="block text-sm font-medium text-gray-700">Metode Pengiriman Tugas</label>
+            <select id="taskType" onchange="toggleInputType()" class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+              <option value="file">Upload File (Gambar / PDF)</option>
+              <option value="link">Tautan / Link (Google Drive / YouTube)</option>
+            </select>
+          </div>
+
+          <!-- Input Pilihan 1: Upload File -->
+          <div id="fileInputContainer">
+            <label class="block text-sm font-medium text-gray-700">Pilih Berkas Tugas (Maksimal 5MB)</label>
+            <input type="file" id="taskFile" accept="image/*,application/pdf"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+            <span class="text-xs text-gray-400">Bisa berupa Foto Lembar Kerja, Gambar, atau PDF.</span>
+          </div>
+
+          <!-- Input Pilihan 2: Link -->
+          <div id="linkInputContainer" class="hidden">
+            <label class="block text-sm font-medium text-gray-700">Tautan / Link Tugas</label>
+            <input type="url" id="taskUrl" placeholder="https://..."
               class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
           </div>
 
@@ -215,7 +232,7 @@
                 <th class="p-3 border">Siswa</th>
                 <th class="p-3 border">Kelas</th>
                 <th class="p-3 border">Judul Tugas</th>
-                <th class="p-3 border">Tautan Berkas</th>
+                <th class="p-3 border">Berkas / Link</th>
                 <th class="p-3 border">Nilai</th>
                 <th class="p-3 border">Catatan Guru</th>
                 <th class="p-3 border no-print">Aksi</th>
@@ -268,6 +285,20 @@
       document.getElementById(pageId).classList.remove('hidden');
     }
 
+    function toggleInputType() {
+      const type = document.getElementById('taskType').value;
+      const fileContainer = document.getElementById('fileInputContainer');
+      const linkContainer = document.getElementById('linkInputContainer');
+
+      if (type === 'file') {
+        fileContainer.classList.remove('hidden');
+        linkContainer.classList.add('hidden');
+      } else {
+        fileContainer.classList.add('hidden');
+        linkContainer.classList.remove('hidden');
+      }
+    }
+
     function handleRegister(e) {
       e.preventDefault();
       const btn = document.getElementById('btnRegister');
@@ -285,7 +316,6 @@
         return;
       }
 
-      // Hitung format password DDMM dari YYYY-MM-DD
       const parts = tglLahir.split('-');
       const day = parts[2];
       const month = parts[1];
@@ -300,10 +330,8 @@
         tglLahir: tglLahir
       };
 
-      // 1. Simpan langsung ke memori lokal browser agar tidak terpengaruh lag Google Sheets
       dbStudents.push(newStudent);
 
-      // 2. Kirim data ke Google Sheets
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
@@ -312,7 +340,6 @@
       }).then(() => {
         alert(`Pendaftaran Berhasil!\n\nNama: ${nama}\nPassword Anda: ${password}\n\nSistem akan otomatis mengarahkan ke Dashboard Anda.`);
         
-        // 3. Langsung Login Otomatis Tanpa Lewat Halaman Login
         currentUser = { ...newStudent, role: "siswa" };
         setupHeader();
         loadStudentDashboard();
@@ -321,7 +348,6 @@
         btn.disabled = false;
         btn.innerText = "Daftar Akun & Langsung Masuk";
       }).catch(err => {
-        alert("Terjadi kesalahan koneksi, tetapi pendaftaran dicoba secara lokal.");
         currentUser = { ...newStudent, role: "siswa" };
         setupHeader();
         loadStudentDashboard();
@@ -338,7 +364,6 @@
       const alertBox = document.getElementById('loginAlert');
       alertBox.classList.add('hidden');
 
-      // Admin Login
       if (userVal === "Hari" && passVal === "Hari123") {
         currentUser = { role: "admin", nama: "Administrator (Hari)" };
         setupHeader();
@@ -347,7 +372,6 @@
         return;
       }
 
-      // Fungsi Pengecekan Siswa
       function checkUser() {
         return dbStudents.find(s => 
           String(s.username).trim().toLowerCase() === userVal.toLowerCase() && 
@@ -363,7 +387,6 @@
         loadStudentDashboard();
         showPage('studentDashboard');
       } else {
-        // Tarik data terbaru dari Google Sheets jika akun belum terbaca
         fetchCloudData(() => {
           foundStudent = checkUser();
           if (foundStudent) {
@@ -404,20 +427,51 @@
     function handleUploadTask(e) {
       e.preventDefault();
       const btn = document.getElementById('btnUpload');
+      const title = document.getElementById('taskTitle').value;
+      const type = document.getElementById('taskType').value;
+
       btn.disabled = true;
       btn.innerText = "Sedang Mengirim...";
 
-      const title = document.getElementById('taskTitle').value;
-      const url = document.getElementById('taskUrl').value;
+      if (type === 'file') {
+        const fileInput = document.getElementById('taskFile');
+        if (fileInput.files.length === 0) {
+          alert("Harap pilih file yang akan diunggah!");
+          btn.disabled = false;
+          btn.innerText = "Simpan & Kirim Tugas";
+          return;
+        }
 
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(evt) {
+          const fileContent = evt.target.result;
+          sendTaskPayload(title, 'file', fileContent, btn);
+        };
+        reader.readAsDataURL(file);
+
+      } else {
+        const url = document.getElementById('taskUrl').value;
+        if (!url) {
+          alert("Harap isi tautan link tugas!");
+          btn.disabled = false;
+          btn.innerText = "Simpan & Kirim Tugas";
+          return;
+        }
+        sendTaskPayload(title, 'link', url, btn);
+      }
+    }
+
+    function sendTaskPayload(title, type, fileContent, btn) {
       const payload = {
         action: "uploadTask",
         id: Date.now(),
         studentName: currentUser.nama,
         studentClass: currentUser.kelas,
         title: title,
-        type: "link",
-        fileContent: url,
+        type: type,
+        fileContent: fileContent,
         uploadDate: new Date().toLocaleDateString('id-ID'),
         nilai: '-',
         catatan: 'Belum dinilai'
@@ -432,11 +486,12 @@
         alert("Tugas Portofolio berhasil dikirim!");
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskUrl').value = '';
+        document.getElementById('taskFile').value = '';
         btn.disabled = false;
         btn.innerText = "Simpan & Kirim Tugas";
         fetchCloudData();
       }).catch(err => {
-        alert("Gagal mengirim tugas.");
+        alert("Gagal mengirim tugas. Silakan periksa koneksi.");
         btn.disabled = false;
         btn.innerText = "Simpan & Kirim Tugas";
       });
@@ -454,14 +509,25 @@
       }
 
       myTasks.forEach(task => {
+        let contentDisplay = '';
+        if (task.type === 'link') {
+          contentDisplay = `
+            <a href="${task.fileContent}" target="_blank" class="inline-block bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700">
+              <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Buka Link Tugas
+            </a>`;
+        } else {
+          contentDisplay = `
+            <a href="${task.fileContent}" target="_blank" class="inline-block bg-emerald-600 text-white px-3 py-1 rounded text-xs hover:bg-emerald-700">
+              <i class="fa-solid fa-file-arrow-down mr-1"></i> Lihat / Unduh File Tugas
+            </a>`;
+        }
+
         container.innerHTML += `
           <div class="border rounded-lg p-4 bg-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="space-y-2 flex-grow">
               <h4 class="font-bold text-gray-800 text-lg">${task.title}</h4>
-              <p class="text-xs text-gray-400">Diunggah: ${task.uploadDate}</p>
-              <a href="${task.fileContent}" target="_blank" class="inline-block bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700">
-                <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Buka Tautan Tugas
-              </a>
+              <p class="text-xs text-gray-400">Diunggah: ${task.uploadDate} | Tipe: ${task.type.toUpperCase()}</p>
+              ${contentDisplay}
             </div>
             <div class="border-t md:border-t-0 md:border-l pt-3 md:pt-0 md:pl-4 min-w-[180px] text-center">
               <span class="text-xs text-gray-500 font-semibold block mb-1">Nilai Guru:</span>
@@ -492,16 +558,19 @@
       }
 
       filteredTasks.forEach(task => {
+        let contentBtn = '';
+        if (task.type === 'link') {
+          contentBtn = `<a href="${task.fileContent}" target="_blank" class="text-indigo-600 font-bold hover:underline"><i class="fa-solid fa-link"></i> Buka Link</a>`;
+        } else {
+          contentBtn = `<a href="${task.fileContent}" target="_blank" class="text-emerald-600 font-bold hover:underline"><i class="fa-solid fa-file-image"></i> Buka File</a>`;
+        }
+
         list.innerHTML += `
           <tr class="border-b hover:bg-gray-50">
             <td class="p-3 border font-medium text-gray-800">${task.studentName}</td>
             <td class="p-3 border">${task.studentClass}</td>
             <td class="p-3 border">${task.title}</td>
-            <td class="p-3 border text-xs">
-              <a href="${task.fileContent}" target="_blank" class="text-indigo-600 font-bold hover:underline">
-                <i class="fa-solid fa-link"></i> Buka Link
-              </a>
-            </td>
+            <td class="p-3 border text-xs">${contentBtn}</td>
             <td class="p-3 border font-bold text-center text-indigo-700">${task.nilai}</td>
             <td class="p-3 border text-xs italic">${task.catatan}</td>
             <td class="p-3 border no-print">
