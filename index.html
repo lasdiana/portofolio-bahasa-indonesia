@@ -42,7 +42,7 @@
         <p class="text-gray-500 text-sm mt-1">Masuk untuk mengelola dan menyimpan tugas Anda</p>
       </div>
 
-      <div id="loginAlert" class="hidden p-3 bg-red-100 text-red-700 rounded-lg text-sm"></div>
+      <div id="loginAlert" class="hidden p-3 bg-red-100 text-red-700 rounded-lg text-sm font-medium"></div>
 
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
@@ -54,7 +54,7 @@
           <label class="block text-sm font-medium text-gray-700">Password</label>
           <input type="password" id="loginPassword" required placeholder="Format DDMM (Tanggal & Bulan Lahir)"
             class="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <span class="text-xs text-gray-400">Contoh password siswa lahir 05 April: <b>0504</b></span>
+          <span class="text-xs text-gray-400">Contoh: Lahir 05 April passwordnya <b>0504</b></span>
         </div>
 
         <button type="submit" id="btnLogin" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition">
@@ -100,7 +100,7 @@
         </div>
 
         <button type="submit" id="btnRegister" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition">
-          Daftar Akun
+          Daftar Akun & Langsung Masuk
         </button>
       </form>
 
@@ -234,7 +234,6 @@
   </footer>
 
   <script>
-    // MASUKKAN WEB APP URL GOOGLE APPS SCRIPT ANDA DI SINI
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4Rap_d5sqIpq9UtbTfiBPwdMju-m4nozTRdc-AiWj-FcFaziAn1J0b-YxFtTeSpjL/exec";
 
     let dbStudents = [];
@@ -245,8 +244,8 @@
       fetchCloudData();
     };
 
-    function fetchCloudData() {
-      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("URL_GOOGLE_APPS_SCRIPT_ANDA")) return;
+    function fetchCloudData(callback) {
+      if (!APPS_SCRIPT_URL) return;
 
       fetch(APPS_SCRIPT_URL)
         .then(res => res.json())
@@ -255,6 +254,7 @@
           dbTasks = data.tasks || [];
           if (currentUser && currentUser.role === 'admin') loadAdminDashboard();
           if (currentUser && currentUser.role === 'siswa') renderStudentTasks();
+          if (callback) callback();
         })
         .catch(err => console.error("Error loading data:", err));
     }
@@ -281,17 +281,17 @@
       if (!nama || !kelas || !tglLahir) {
         alert("Harap isi semua kolom pendaftaran!");
         btn.disabled = false;
-        btn.innerText = "Daftar Akun";
+        btn.innerText = "Daftar Akun & Langsung Masuk";
         return;
       }
 
-      const dateObj = new Date(tglLahir);
-      const day = String(dateObj.getDate()).padStart(2, '0');
-      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      // Hitung format password DDMM dari YYYY-MM-DD
+      const parts = tglLahir.split('-');
+      const day = parts[2];
+      const month = parts[1];
       const password = `${day}${month}`;
 
-      const payload = {
-        action: "register",
+      const newStudent = {
         id: Date.now(),
         username: nama,
         password: password,
@@ -300,21 +300,34 @@
         tglLahir: tglLahir
       };
 
+      // 1. Simpan langsung ke memori lokal browser agar tidak terpengaruh lag Google Sheets
+      dbStudents.push(newStudent);
+
+      // 2. Kirim data ke Google Sheets
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ action: "register", ...newStudent })
       }).then(() => {
-        alert(`Pendaftaran Berhasil!\n\nUsername: ${nama}\nPassword: ${password}`);
+        alert(`Pendaftaran Berhasil!\n\nNama: ${nama}\nPassword Anda: ${password}\n\nSistem akan otomatis mengarahkan ke Dashboard Anda.`);
+        
+        // 3. Langsung Login Otomatis Tanpa Lewat Halaman Login
+        currentUser = { ...newStudent, role: "siswa" };
+        setupHeader();
+        loadStudentDashboard();
+        showPage('studentDashboard');
+
         btn.disabled = false;
-        btn.innerText = "Daftar Akun";
-        fetchCloudData();
-        showPage('loginPage');
+        btn.innerText = "Daftar Akun & Langsung Masuk";
       }).catch(err => {
-        alert("Gagal mendaftar. Silakan periksa koneksi internet.");
+        alert("Terjadi kesalahan koneksi, tetapi pendaftaran dicoba secara lokal.");
+        currentUser = { ...newStudent, role: "siswa" };
+        setupHeader();
+        loadStudentDashboard();
+        showPage('studentDashboard');
         btn.disabled = false;
-        btn.innerText = "Daftar Akun";
+        btn.innerText = "Daftar Akun & Langsung Masuk";
       });
     }
 
@@ -323,7 +336,9 @@
       const userVal = document.getElementById('loginUsername').value.trim();
       const passVal = document.getElementById('loginPassword').value.trim();
       const alertBox = document.getElementById('loginAlert');
+      alertBox.classList.add('hidden');
 
+      // Admin Login
       if (userVal === "Hari" && passVal === "Hari123") {
         currentUser = { role: "admin", nama: "Administrator (Hari)" };
         setupHeader();
@@ -332,9 +347,15 @@
         return;
       }
 
-      const foundStudent = dbStudents.find(s => 
-        String(s.username).toLowerCase() === userVal.toLowerCase() && String(s.password) === passVal
-      );
+      // Fungsi Pengecekan Siswa
+      function checkUser() {
+        return dbStudents.find(s => 
+          String(s.username).trim().toLowerCase() === userVal.toLowerCase() && 
+          String(s.password).trim() === passVal
+        );
+      }
+
+      let foundStudent = checkUser();
 
       if (foundStudent) {
         currentUser = { ...foundStudent, role: "siswa" };
@@ -342,8 +363,23 @@
         loadStudentDashboard();
         showPage('studentDashboard');
       } else {
-        alertBox.textContent = "Username/Password salah atau data belum disinkronkan. Klik Refresh!";
-        alertBox.classList.remove('hidden');
+        // Tarik data terbaru dari Google Sheets jika akun belum terbaca
+        fetchCloudData(() => {
+          foundStudent = checkUser();
+          if (foundStudent) {
+            currentUser = { ...foundStudent, role: "siswa" };
+            setupHeader();
+            loadStudentDashboard();
+            showPage('studentDashboard');
+          } else {
+            alertBox.innerHTML = `
+              <p class="font-bold">Login Gagal!</p>
+              <p class="text-xs mt-1">• Pastikan Username diisi **Nama Lengkap** seperti saat mendaftar.</p>
+              <p class="text-xs">• Password menggunakan 2 digit Tanggal & 2 digit Bulan lahir (DDMM).</p>
+            `;
+            alertBox.classList.remove('hidden');
+          }
+        });
       }
     }
 
